@@ -1,0 +1,5 @@
+*.agda~
+.DS_STORE
+*.agdai
+AOC-bin
+AOC-bin/*
