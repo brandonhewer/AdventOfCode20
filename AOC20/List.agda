@@ -3,6 +3,9 @@
 module AOC20.List where
 
 open import Data.Bool
+open import Data.Fin
+open import Data.Fin.Patterns
+open import Data.Fin.Properties
 open import Data.List hiding ([_]) public
 open import Data.Maybe hiding (map; zipWith)
 open import Data.Nat
@@ -56,8 +59,26 @@ cartesianProductWith f (x ∷ xs) ys = map (f x) ys ++ cartesianProductWith f xs
 cartesianProduct : List A → List B → List (A × B)
 cartesianProduct = cartesianProductWith _,_
 
+-- [0 , 1 , 2 , 3]
+-- [(1 , 2) , (1 , 3) , (2 , 3)]
+-- [(0 , 1 , 2) , (0 , 2 , 3) , (0 , 1 , 3) , (1 , 2 , 3)]
+
 cartesianProduct₃ : List A → List B → List C → List (A × B × C)
 cartesianProduct₃ as bs cs = cartesianProduct as (cartesianProduct bs cs)
+
+distinctTuples : ∀ n → List A → List (Fin n → A)
+distinctTuples 0 xs = []
+distinctTuples 1 xs = map const xs
+distinctTuples (suc (suc n)) [] = []
+distinctTuples (suc (suc n)) (x ∷ xs) =
+  map (∀-cons x) (distinctTuples (suc n) xs) ++
+  distinctTuples (suc (suc n)) xs
+
+distinctPairs : List A → List (A × A)
+distinctPairs = map (λ f → f 0F , f 1F) ∘ distinctTuples 2
+
+distinctTriples : List A → List (A × A × A)
+distinctTriples = map (λ f → f 0F , f 1F , f 2F) ∘ distinctTuples 3
 
 findWith : {P : A → Set ℓ₂} → (∀ a → Dec (P a)) → List A → Maybe (Σ A P)
 findWith P? [] = nothing

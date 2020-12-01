@@ -40,7 +40,7 @@ day1-1 = maybe′ showℕ "Solution not found" ∘ solve ∘ nats
     solve : List ℕ → Maybe ℕ
     solve ns = mapMaybe (uncurry _*_ ∘ proj₁)
                         (findWith (λ { (x , y) → x + y ≟ 2020 })
-                                  (cartesianProduct ns ns))
+                                  (distinctPairs ns))
 
 day1-2 : String → String
 day1-2 = maybe′ showℕ "Solution not found" ∘ solve ∘ nats
@@ -48,4 +48,4 @@ day1-2 = maybe′ showℕ "Solution not found" ∘ solve ∘ nats
     solve : List ℕ → Maybe ℕ
     solve ns = mapMaybe ((λ { (x , y , z) → x * y * z }) ∘ proj₁)
                         (findWith (λ { (x , y , z) → x + y + z ≟ 2020 })
-                                  (cartesianProduct₃ ns ns ns))
+                                  (distinctTriples ns))
