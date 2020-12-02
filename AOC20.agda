@@ -18,8 +18,10 @@ module AOC20 where
   open import Function
 
   getSolution : ℕ → ℕ → String → String
-  getSolution 1 1 = day1-1
-  getSolution 1 2 = day1-2
+  getSolution 1 1 = Day1.Part1
+  getSolution 1 2 = Day1.Part2
+  getSolution 2 1 = Day2.Part1
+  getSolution 2 2 = Day2.Part2
   getSolution _ _ = const "Solution doesn't exist"
 
   getSolution′ : Maybe ℕ → Maybe ℕ → String → String

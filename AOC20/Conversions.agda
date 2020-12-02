@@ -8,7 +8,7 @@ open import AOC20.List
 open import Data.Bool
 open import Data.Char
 open import Data.Fin hiding (toℕ; fromℕ; _+_)
-open import Data.Maybe hiding (map)
+open import Data.Maybe renaming (map to maybeMap)
 open import Data.Nat
 open import Data.String
 open import Data.Sum hiding (map)
@@ -21,8 +21,13 @@ charToℕ c with isDigit c
 ... | false = nothing
 ... | true  = just (toℕ c ∸ toℕ '0')
 
-toBaseℕ : ℕ → List ℕ → Maybe ℕ
-toBaseℕ b ns with proj₂ (mapAccumL (λ s n → b * s , s * n) 1 ns)
+toBaseℕL : ℕ → List ℕ → Maybe ℕ
+toBaseℕL b ns with proj₂ (mapAccumL (λ s n → b * s , s * n) 1 ns)
+... | []     = nothing
+... | m ∷ ms = just (m + sum ms)
+
+toBaseℕR : ℕ → List ℕ → Maybe ℕ
+toBaseℕR b ns with proj₂ (mapAccumR (λ s n → b * s , s * n) 1 ns)
 ... | []     = nothing
 ... | m ∷ ms = just (m + sum ms)
 
@@ -35,7 +40,10 @@ toDecimalChars = map toDigitChar ∘ toNatDigits 10
 showℕ : ℕ → String
 showℕ = fromList ∘ toDecimalChars
 
+readℕ′ : List Char → Maybe ℕ
+readℕ′ = (_>>= toBaseℕR 10) ∘ maybeList ∘ map charToℕ
+
 readℕ : String → String ⊎ ℕ
 readℕ s =
   let ns = maybeList (map charToℕ (toList s))
-   in maybe′ (maybe′ inj₂ (inj₁ s) ∘ toBaseℕ 10) (inj₁ s) ns
+   in maybe′ (maybe′ inj₂ (inj₁ s) ∘ toBaseℕR 10) (inj₁ s) ns

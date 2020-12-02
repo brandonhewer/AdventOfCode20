@@ -47,5 +47,5 @@ IO⊥ (now a)   = return a
 IO⊥ (later a) = ♯ return tt >> ♯ IO⊥ (♭ a)
 
 readℕ∞ : Costring → Maybe ℕ ⊥
-readℕ∞ = map-⊥ ((_>>= toBaseℕ 10) ∘ maybeList ∘ map charToℕ) ∘
+readℕ∞ = map-⊥ ((_>>= toBaseℕR 10) ∘ maybeList ∘ map charToℕ) ∘
          costringToList⊥
