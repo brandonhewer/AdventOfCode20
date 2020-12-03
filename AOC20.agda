@@ -22,6 +22,8 @@ module AOC20 where
   getSolution 1 2 = Day1.Part2
   getSolution 2 1 = Day2.Part1
   getSolution 2 2 = Day2.Part2
+  getSolution 3 1 = Day3.Part1
+  getSolution 3 2 = Day3.Part2
   getSolution _ _ = const "Solution doesn't exist"
 
   getSolution′ : Maybe ℕ → Maybe ℕ → String → String
