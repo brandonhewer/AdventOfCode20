@@ -46,4 +46,3 @@ getLine′ : IO String
 getLine′ =
   ♯ lift getLine >>= λ s →
     ♯ IO⊥ (map-⊥ (fromList ∘ reverse) (costringToList⊥ s))
-

@@ -6,7 +6,8 @@ open import AOC20.Digit
 open import AOC20.List
 
 open import Data.Bool
-open import Data.Char
+open import Data.Bool.Properties using (T?)
+open import Data.Char renaming (_≟_ to _≟ᶜ_)
 open import Data.Fin hiding (toℕ; fromℕ; _+_)
 open import Data.Maybe renaming (map to maybeMap)
 open import Data.Nat
@@ -47,3 +48,9 @@ readℕ : String → String ⊎ ℕ
 readℕ s =
   let ns = maybeList (map charToℕ (toList s))
    in maybe′ (maybe′ inj₂ (inj₁ s) ∘ toBaseℕR 10) (inj₁ s) ns
+
+lines : List Char → List (List Char)
+lines = wordsBy (_≟ᶜ '\n')
+
+nats : String → List ℕ
+nats = stripMaybe ∘ map readℕ′ ∘ wordsBy (T? ∘ isSpace) ∘ toList
