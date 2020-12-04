@@ -7,8 +7,9 @@ open import Data.Fin
 open import Data.Fin.Patterns
 open import Data.Fin.Properties
 open import Data.List hiding ([_]) public
-open import Data.List.NonEmpty hiding ([_]; wordsBy; reverse) renaming (map to map⁺)
-open import Data.Maybe hiding (map; zipWith)
+open import Data.List.Properties public
+open import Data.List.NonEmpty hiding ([_]; wordsBy; reverse; length) renaming (map to map⁺)
+open import Data.Maybe renaming (map to maybeMap) hiding (zipWith)
 open import Data.Nat
 open import Data.Product hiding (map) renaming (map₂ to map-snd)
 open import Data.Sum hiding (map; map₁; map₂)
@@ -17,6 +18,7 @@ open import Function
 
 open import Level renaming (zero to ℓ-zero; suc to ℓ-suc)
 
+open import Relation.Binary using (DecidableEquality)
 open import Relation.Nullary
 
 private
@@ -26,6 +28,14 @@ private
     B : Set ℓ₂
     C : Set ℓ₃
     D : Set ℓ₄
+
+  opposite : ∀ {n} → Fin n → Fin n
+  opposite {suc n} zero    = fromℕ n
+  opposite {suc n} (suc i) = inject₁ (opposite i)
+
+isEqList : DecidableEquality A → (xs : List A) →
+           (i : Fin (length xs)) → ∀ a → Dec _
+isEqList _≟_ xs i a = lookup xs i ≟ a
 
 map₂ : (A → B → C) → List A → List B → List C
 map₂ f []       _        = []
@@ -99,6 +109,20 @@ stripMaybe []             = []
 stripMaybe (nothing ∷ xs) = stripMaybe xs
 stripMaybe (just x  ∷ xs) = x ∷ stripMaybe xs
 
+stripPrefix : ∀ {n} {P : Fin n → A → Set ℓ₂} →
+                (∀ i a → Dec (P i a)) →
+                List A → Maybe (List A)
+stripPrefix {n = zero} P? xs  = just xs
+stripPrefix {n = suc n} P? [] = nothing
+stripPrefix {n = suc n} P? (x ∷ xs) with does (P? zero x)
+... | false = nothing
+... | true  = stripPrefix (P? ∘ suc) xs
+
+stripSuffix : ∀ {n} {P : Fin n → A → Set ℓ₂} →
+                (∀ i a → Dec (P i a)) →
+                List A → Maybe (List A)
+stripSuffix P? xs = maybeMap reverse (stripPrefix (P? ∘ opposite) (reverse xs))
+
 hasLeft? : List (A ⊎ B) → List A ⊎ List B
 hasLeft? [] = inj₂ []
 hasLeft? (x ∷ xs) with hasLeft? xs
@@ -118,9 +142,42 @@ wordsBy {A = A} P? = go []
     ... | true  = cons acc (go [] cs)
     ... | false = go (c ∷ acc) cs
 
+open import Data.Bool.Properties using (T?)
+
+wordsByⁿ : ∀ {n} {P : Fin n → A → Set ℓ₂} →
+             (∀ i a → Dec (P i a)) → List A → List (List A)
+wordsByⁿ {A = A} {n = zero} P? = const []
+wordsByⁿ {A = A} {n = suc n} P? = go P? [] []
+  where
+    cons : List A → List (List A) → List (List A)
+    cons []       ass = ass
+    cons (a ∷ as) ass = reverse (a ∷ as) ∷ ass
+
+    go : ∀ {n} {P : Fin n → A → Set ℓ₂} →
+           (∀ i a → Dec (P i a)) → List A → List A → List A → List (List A)
+    go {n = n} Q? acc₁ acc₂ [] = cons acc₁ []
+    go {n = zero} Q? acc₁ acc₂ (x ∷ xs) with does (P? zero x)
+    ... | false = cons acc₁ (go (P? ∘ suc) (x ∷ []) [] xs)
+    ... | true  = cons acc₁ (go (P? ∘ suc) [] (x ∷ []) xs)
+    go {n = suc n} Q? acc₁ acc₂ (x ∷ xs) with does (Q? zero x)
+    ... | false = go P? (x ∷ (acc₂ ++ acc₁)) [] xs
+    ... | true  = go (Q? ∘ suc) acc₁ (x ∷ acc₂) xs
+
+wordsⁿ : DecidableEquality A → List A → List A → List (List A)
+wordsⁿ _≡ₐ_ as = wordsByⁿ λ i a → lookup as i ≡ₐ a
+
 splitFirst : {P : A → Set ℓ₂} → (∀ a → Dec (P a)) →
              List A → List A × List A
 splitFirst P? = map-snd (λ { [] → []; (_ ∷ xs) → xs }) ∘ break P?
+
+contains : {P : A → Set ℓ₂} → (∀ a → Dec (P a)) → List A → Bool
+contains P? = is-just ∘ findWith P?
+
+containsAll : ∀ {n} {P : Fin n → A → Set ℓ₂} →
+                (∀ i a → Dec (P i a)) → List A → Bool
+containsAll {n = zero}  P? xs = true
+containsAll {n = suc n} P? xs = contains (P? zero) xs ∧
+                                containsAll (P? ∘ suc) xs
 
 occurs : {P : A → Set ℓ₂} → (∀ a → Dec (P a)) → List A → ℕ
 occurs P? [] = 0
