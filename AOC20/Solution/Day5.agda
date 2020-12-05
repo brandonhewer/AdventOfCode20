@@ -6,7 +6,7 @@ open import AOC20.Conversions
 open import AOC20.List hiding (intersperse)
 
 open import Data.Char renaming (_≟_ to _≟ᶜ_)
-open import Data.Maybe renaming (map to maybeMap; zipWith to zipWithM)
+open import Data.Maybe renaming (map to maybeMap)
 open import Data.Maybe.Properties renaming (≡-dec to ≡-maybe≡)
 open import Data.Nat renaming (_≟_ to _≟ⁿ_)
 open import Data.String
