@@ -19,33 +19,22 @@ open import Level hiding (_⊔_; suc)
 
 open import Relation.Nullary
 
-isEqBin : Char → Char → Char → Maybe ℕ
-isEqBin z o c =
-  if does (z ≟ᶜ c) then
-    just 0
-  else if does (o ≟ᶜ c) then
-    just 1
-  else
-    nothing
+binCodes : Char → Maybe ℕ
+binCodes 'F' = just 0
+binCodes 'B' = just 1
+binCodes 'L' = just 0
+binCodes 'R' = just 1
+binCodes  _  = nothing
 
 toBinary : (Char → Maybe ℕ) → List Char → Maybe ℕ
 toBinary f = maybeMap (toBaseℕL 2) ∘ maybeList ∘ map f
 
-calcSeat : {ℓ : Level} {A : Set ℓ} → (ℕ → ℕ → A) → List Char → Maybe A
-calcSeat f = uncurry (zipWithM f) ∘
-             Σ-map (toBinary (isEqBin 'F' 'B'))
-                   (toBinary (isEqBin 'L' 'R')) ∘
-             partitionⁿ 7
-
-seatID : ℕ → ℕ → ℕ
-seatID r c = 8 * r + c
-
 Part1 : String → String
 Part1 = showℕ ∘ foldr (maybe′ _⊔_ id) 0 ∘
-        map (calcSeat seatID) ∘ lines ∘ toList
+        map (toBinary binCodes) ∘ lines ∘ toList
 
 Part2 : String → String
 Part2 = maybe′ showℕ "nothing" ∘ (_>>= id) ∘ (_>>= head) ∘ tail ∘
         derun (≡-maybe≡ _≟ⁿ_ ∘ maybeMap suc) ∘
         difference (≡-maybe≡ _≟ⁿ_) (applyUpTo just 1023) ∘
-        map (calcSeat seatID) ∘ lines ∘ toList
+        map (toBinary binCodes) ∘ lines ∘ toList
