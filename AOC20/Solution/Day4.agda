@@ -46,7 +46,7 @@ isValidPassport (
        isValidID id
   where
     isNumberBtwn : ℕ → ℕ → ℕ → List Char → Bool
-    isNumberBtwn len l u xs with readℕ′ xs
+    isNumberBtwn len l u xs with readℕ xs
     ... | nothing = false
     ... | just n  = does (length xs ≟ⁿ len) ∧ does (l ≤? n) ∧
                     does (n ≤? u)

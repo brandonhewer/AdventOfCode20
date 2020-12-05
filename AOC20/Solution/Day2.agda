@@ -22,8 +22,8 @@ parsePolicy : List Char → Maybe (ℕ × ℕ × List Char)
 parsePolicy s = do
   let (r , s′)  = splitFirst (T? ∘ isSpace) s
       (m′ , n′) = splitFirst (_≟ᶜ '-') r
-  m ← readℕ′ m′
-  n ← readℕ′ n′
+  m ← readℕ m′
+  n ← readℕ n′
   just (m , n , s′)
 
 parse : List Char → Maybe (List Char × ℕ × ℕ × List Char)
