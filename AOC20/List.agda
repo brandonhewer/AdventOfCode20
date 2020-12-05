@@ -8,7 +8,8 @@ open import Data.Fin.Patterns
 open import Data.Fin.Properties
 open import Data.List hiding ([_]) public
 open import Data.List.Properties public
-open import Data.List.NonEmpty hiding ([_]; wordsBy; reverse; length) renaming (map to map⁺)
+open import Data.List.NonEmpty hiding ([_]; wordsBy; reverse; length; foldl)
+                               renaming (map to map⁺)
 open import Data.Maybe renaming (map to maybeMap) hiding (zipWith)
 open import Data.Nat
 open import Data.Product hiding (map) renaming (map₂ to map-snd)
@@ -198,3 +199,13 @@ occursⁿ P? as bs = go P? as bs bs
     go P? (a ∷ as) bs (b₁ ∷ b₂ ∷ bs′) with does (P? a b₁)
     ... | false = go P? as bs bs
     ... | true  = go P? as bs (b₂ ∷ bs′)
+
+partitionⁿ : {ℓ : Level} {A : Set ℓ} → ℕ → List A → List A × List A
+partitionⁿ = take -,- drop
+
+difference : {P : A → A → Set ℓ₁} → (∀ a b → Dec (P a b)) →
+             List A → List A → List A
+difference {A = A} P? = foldl (flip (filter ∘ notP?))
+  where
+    notP? : (x y : A) → Dec _
+    notP? x y = T? (not (does (P? x y)))
