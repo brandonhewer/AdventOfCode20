@@ -9,7 +9,7 @@ open import Category.Monad.Partiality hiding (map) public
 
 open import Data.Char
 open import Data.List
-open import Data.Maybe hiding (map)
+open import Data.Maybe renaming (map to maybeMap)
 open import Data.Nat
 open import Data.String
 open import Data.Unit.Polymorphic
@@ -47,5 +47,5 @@ IO⊥ (now a)   = return a
 IO⊥ (later a) = ♯ return tt >> ♯ IO⊥ (♭ a)
 
 readℕ∞ : Costring → Maybe ℕ ⊥
-readℕ∞ = map-⊥ ((_>>= toBaseℕR 10) ∘ maybeList ∘ map charToℕ) ∘
+readℕ∞ = map-⊥ (maybeMap (toBaseℕL 10) ∘ maybeList ∘ map charToℕ) ∘
          costringToList⊥

@@ -20,14 +20,16 @@ open import Level hiding (_⊔_; suc)
 open import Relation.Nullary
 
 isEqBin : Char → Char → Char → Maybe ℕ
-isEqBin z o c with does (z ≟ᶜ c)
-... | true  = just 0
-... | false   with does (o ≟ᶜ c)
-... | true  = just 1
-... | false = nothing
+isEqBin z o c =
+  if does (z ≟ᶜ c) then
+    just 0
+  else if does (o ≟ᶜ c) then
+    just 1
+  else
+    nothing
 
 toBinary : (Char → Maybe ℕ) → List Char → Maybe ℕ
-toBinary f = (_>>= toBaseℕR 2) ∘ maybeList ∘ map f
+toBinary f = maybeMap (toBaseℕL 2) ∘ maybeList ∘ map f
 
 calcSeat : {ℓ : Level} {A : Set ℓ} → (ℕ → ℕ → A) → List Char → Maybe A
 calcSeat f = uncurry (zipWithM f) ∘

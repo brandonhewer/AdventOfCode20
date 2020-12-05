@@ -22,15 +22,21 @@ charToℕ c with isDigit c
 ... | false = nothing
 ... | true  = just (toℕ c ∸ toℕ '0')
 
-toBaseℕL : ℕ → List ℕ → Maybe ℕ
-toBaseℕL b ns with proj₂ (mapAccumL (λ s n → b * s , s * n) 1 ns)
-... | []     = nothing
-... | m ∷ ms = just (m + sum ms)
+toBaseℕL : ℕ → List ℕ → ℕ
+toBaseℕL b = foldl (λ a d → b * a + d) 0
 
-toBaseℕR : ℕ → List ℕ → Maybe ℕ
-toBaseℕR b ns with proj₂ (mapAccumR (λ s n → b * s , s * n) 1 ns)
+{- with proj₂ (mapAccumL (λ s n → b * s , s * n) 1 ns)
 ... | []     = nothing
 ... | m ∷ ms = just (m + sum ms)
+-}
+
+toBaseℕR : ℕ → List ℕ → ℕ
+toBaseℕR b = foldr (λ a d → b * a + d) 0
+
+{- with proj₂ (mapAccumR (λ s n → b * s , s * n) 1 ns)
+... | []     = nothing
+... | m ∷ ms = just (m + sum ms)
+-}
 
 toDigitChar : (n : ℕ) → Char
 toDigitChar n = fromℕ (n + (toℕ '0'))
@@ -42,12 +48,14 @@ showℕ : ℕ → String
 showℕ = fromList ∘ toDecimalChars
 
 readℕ′ : List Char → Maybe ℕ
-readℕ′ = (_>>= toBaseℕR 10) ∘ maybeList ∘ map charToℕ
+readℕ′ = maybeMap (toBaseℕL 10) ∘ maybeList ∘ map charToℕ
 
+{-
 readℕ : String → String ⊎ ℕ
 readℕ s =
   let ns = maybeList (map charToℕ (toList s))
    in maybe′ (maybe′ inj₂ (inj₁ s) ∘ toBaseℕR 10) (inj₁ s) ns
+-}
 
 lines : List Char → List (List Char)
 lines = wordsBy (_≟ᶜ '\n')
