@@ -28,6 +28,8 @@ getSolution 4 1 = Part₄₁
 getSolution 4 2 = Part₄₂
 getSolution 5 1 = Part₅₁
 getSolution 5 2 = Part₅₂
+getSolution 6 1 = Part₆₁
+getSolution 6 2 = Part₆₂
 getSolution _ _ = const "Solution doesn't exist"
 
 getSolution′ : Maybe ℕ → Maybe ℕ → String → String

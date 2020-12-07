@@ -3,12 +3,14 @@
 module AOC20.List where
 
 open import Data.Bool
+open import Data.Bool.Properties using (T?)
 open import Data.Fin
 open import Data.Fin.Patterns
 open import Data.Fin.Properties
 open import Data.List hiding ([_]) public
 open import Data.List.Properties public
-open import Data.List.NonEmpty hiding ([_]; wordsBy; reverse; length; foldl)
+open import Data.List.NonEmpty hiding ([_]; concat; wordsBy; reverse;
+                                       length; foldl; tail; head)
                                renaming (map to map⁺)
 open import Data.Maybe renaming (map to maybeMap) hiding (zipWith)
 open import Data.Nat
@@ -17,7 +19,7 @@ open import Data.Sum hiding (map; map₁; map₂)
 
 open import Function
 
-open import Level renaming (zero to ℓ-zero; suc to ℓ-suc)
+open import Level renaming (zero to ℓ-zero; suc to ℓ-suc; _⊔_ to ℓ-max)
 
 open import Relation.Binary using (DecidableEquality)
 open import Relation.Nullary
@@ -34,9 +36,8 @@ private
   opposite {suc n} zero    = fromℕ n
   opposite {suc n} (suc i) = inject₁ (opposite i)
 
-isEqList : DecidableEquality A → (xs : List A) →
-           (i : Fin (length xs)) → ∀ a → Dec _
-isEqList _≟_ xs i a = lookup xs i ≟ a
+snd : List A → Maybe A
+snd = (_>>= head) ∘ tail
 
 map₂ : (A → B → C) → List A → List B → List C
 map₂ f []       _        = []
@@ -124,11 +125,18 @@ stripSuffix : ∀ {n} {P : Fin n → A → Set ℓ₂} →
                 List A → Maybe (List A)
 stripSuffix P? xs = maybeMap reverse (stripPrefix (P? ∘ opposite) (reverse xs))
 
+stripSuffix′ : DecidableEquality A → List A → List A → Maybe (List A)
+stripSuffix′ _≟_ xs = stripSuffix λ i → lookup xs i ≟_
+
 hasLeft? : List (A ⊎ B) → List A ⊎ List B
 hasLeft? [] = inj₂ []
 hasLeft? (x ∷ xs) with hasLeft? xs
 ... | inj₁ as = [ inj₁ ∘ (_∷ as) , const (inj₁ as) ] x
 ... | inj₂ bs = [ inj₁ ∘ (_∷ []) , inj₂ ∘ (_∷ bs) ] x
+
+intersectBy : ∀ {P : A → A → Set ℓ₂} → (∀ a b → Dec (P a b)) →
+                List A → List A → List A
+intersectBy P? xs ys = filter (λ x → T? (any (does ∘ P? x) ys)) xs
 
 wordsBy : ∀ {P : A → Set ℓ₂} → (∀ a → Dec (P a)) → List A → List (List A)
 wordsBy {A = A} P? = go []
@@ -143,7 +151,14 @@ wordsBy {A = A} P? = go []
     ... | true  = cons acc (go [] cs)
     ... | false = go (c ∷ acc) cs
 
-open import Data.Bool.Properties using (T?)
+linesBy : ∀ {P : A → Set ℓ₂} → (∀ a → Dec (P a)) → List A → List (List A)
+linesBy {A = A} P? = go []
+  where
+    go : List A → List A → List (List A)
+    go acc [] = reverse acc ∷ []
+    go acc (c ∷ cs) with does (P? c)
+    ... | true = reverse acc ∷ go [] cs
+    ... | false = go (c ∷ acc) cs
 
 wordsByⁿ : ∀ {n} {P : Fin n → A → Set ℓ₂} →
              (∀ i a → Dec (P i a)) → List A → List (List A)
@@ -200,12 +215,9 @@ occursⁿ P? as bs = go P? as bs bs
     ... | false = go P? as bs bs
     ... | true  = go P? as bs (b₂ ∷ bs′)
 
-partitionⁿ : {ℓ : Level} {A : Set ℓ} → ℕ → List A → List A × List A
-partitionⁿ = take -,- drop
-
 difference : {P : A → A → Set ℓ₁} → (∀ a b → Dec (P a b)) →
              List A → List A → List A
-difference {A = A} P? = foldl (flip (filter ∘ notP?))
+difference {A = A} P? = foldl (flip (boolFilter ∘ notP?))
   where
-    notP? : (x y : A) → Dec _
-    notP? x y = T? (not (does (P? x y)))
+    notP? : (x y : A) → Bool
+    notP? x = not ∘ does ∘ P? x

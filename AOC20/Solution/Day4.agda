@@ -20,8 +20,8 @@ open import Relation.Nullary
 kwargs : Char → List Char → List (List Char × List Char)
 kwargs c = map (splitFirst (_≟ᶜ c)) ∘ wordsBy (T? ∘ isSpace)
 
-parseFields : Char → List (List Char) → List Char → Maybe (List (List Char))
-parseFields d ks = mk ∘ concatMap (kwargs d) ∘ wordsBy (_≟ᶜ '\n')
+parseFields : Char → List (List Char) → List (List Char) → Maybe (List (List Char))
+parseFields d ks = mk ∘ concatMap (kwargs d)
   where
     mk : List (List Char × List Char) → Maybe (List (List Char))
     mk xs = maybeList (map (λ x → maybeMap (proj₂ ∘ proj₁)
@@ -29,7 +29,7 @@ parseFields d ks = mk ∘ concatMap (kwargs d) ∘ wordsBy (_≟ᶜ '\n')
 
 parseEntries : List (List Char) → String → List (Maybe (List (List Char)))
 parseEntries ks = map (parseFields ':' ks) ∘
-                  wordsByⁿ (isEqList _≟ᶜ_ ('\n' ∷ '\n' ∷ [])) ∘ toList
+                  wordsBy (T? ∘ null) ∘ lines ∘ toList
 
 isValidPassport : List (List Char) → Bool
 isValidPassport (
@@ -61,9 +61,9 @@ isValidPassport (
     isValidEY = isNumberBtwn 4 2020 2030
 
     isValidHT : List Char → Bool
-    isValidHT xs with stripSuffix (isEqList _≟ᶜ_ ('c' ∷ 'm' ∷ [])) xs
+    isValidHT xs with stripSuffix′ _≟ᶜ_ ('c' ∷ 'm' ∷ []) xs
     ... | just cm  = isNumberBtwn 3 150 193 cm
-    ... | nothing with stripSuffix (isEqList _≟ᶜ_ ('i' ∷ 'n' ∷ [])) xs
+    ... | nothing with stripSuffix′ _≟ᶜ_ ('i' ∷ 'n' ∷ []) xs
     ... | nothing  = false
     ... | just inc = isNumberBtwn 2 59 76 inc
 

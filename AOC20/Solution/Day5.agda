@@ -25,12 +25,14 @@ binCodes  _  = nothing
 toBinary : (Char → Maybe ℕ) → List Char → Maybe ℕ
 toBinary f = maybeMap (toBaseℕL 2) ∘ maybeList ∘ map f
 
+parseBinary : String → List (Maybe ℕ)
+parseBinary = map (toBinary binCodes) ∘ lines ∘ toList
+
 Part1 : String → String
-Part1 = showℕ ∘ foldr (maybe′ _⊔_ id) 0 ∘
-        map (toBinary binCodes) ∘ lines ∘ toList
+Part1 = showℕ ∘ foldr (maybe′ _⊔_ id) 0 ∘ parseBinary
 
 Part2 : String → String
-Part2 = maybe′ showℕ "nothing" ∘ (_>>= id) ∘ (_>>= head) ∘ tail ∘
+Part2 = maybe′ showℕ "nothing" ∘ (_>>= id) ∘ snd ∘
         derun (≡-maybe≡ _≟ⁿ_ ∘ maybeMap suc) ∘
         difference (≡-maybe≡ _≟ⁿ_) (applyUpTo just 1023) ∘
-        map (toBinary binCodes) ∘ lines ∘ toList
+        parseBinary

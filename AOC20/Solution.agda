@@ -12,3 +12,5 @@ open import AOC20.Solution.Day4 renaming (Part1 to Part₄₁;
                                           Part2 to Part₄₂) public
 open import AOC20.Solution.Day5 renaming (Part1 to Part₅₁;
                                           Part2 to Part₅₂) public
+open import AOC20.Solution.Day6 renaming (Part1 to Part₆₁;
+                                          Part2 to Part₆₂) public

@@ -41,7 +41,7 @@ readℕ : List Char → Maybe ℕ
 readℕ = maybeMap (toBaseℕL 10) ∘ maybeList ∘ map charToℕ
 
 lines : List Char → List (List Char)
-lines = wordsBy (_≟ᶜ '\n')
+lines = linesBy (_≟ᶜ '\n')
 
 nats : String → List ℕ
 nats = stripMaybe ∘ map readℕ ∘ wordsBy (T? ∘ isSpace) ∘ toList
